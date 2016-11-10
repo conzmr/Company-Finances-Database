@@ -3,11 +3,15 @@ public class Database {
 	private HashTableOpenAddressing<String, PrincipalNode> hash;
 	
 	/*
-	 * Agregar items a esa factura
 	 * Eliminar items a esa factura
 	 * Modificar expenses de los items de esa factura
 	 * Obtener total de una factura
+	 * Iterador de la hashtable
+	 * Se sobreescriben los amounts si es el mismo item
+	 * O pongo tres cosas en la hash, la key que sea el string junto con el item a caracter
+	 * y luego el string y el item como valor. 
 	 * 
+	 * Falta el iterador de la hash. 
 	 */
 	
 	private class PrincipalNode{
@@ -19,6 +23,10 @@ public class Database {
 			this.avl= new AVLTree<>();
 		}
 		
+		private void updateItems(Integer invoiceNumber, String oldItem, Integer oldAmount, String newItem){
+			//Modificar cualquiera de los dos pero no se pueden modificar las keys. 
+		}
+		
 		private void insertItems(Integer invoiceNumber, String item, Integer amount){
 			if(!this.invoiceExists(invoiceNumber)){
 				this.avl.insert(new HashTableOpenAddressing<>(), invoiceNumber);
@@ -28,10 +36,10 @@ public class Database {
 		
 		private boolean removeItems(Integer invoiceNumber, String item, Integer amount){
 			if(!this.invoiceExists(invoiceNumber)){
-				System.out.println("El n˙mero de factura es inv·lido. ");
+				System.out.println("El n√∫mero de factura es inv√°lido. ");
 				return false;
 			}
-			//eliminar item sÛlo si el item y la amount coinciden.
+			//eliminar item s√≥lo si el item y la amount coinciden.
 			return true;
 		}
 		
@@ -41,7 +49,7 @@ public class Database {
 		
 		private boolean deleteInvoice(int invoiceNumber){
 			if(this.invoiceExists(invoiceNumber)){
-				//Agregar mÈtodo remove al AVL
+				this.avl.delete(invoiceNumber);
 				return true;
 			}
 			return false;
@@ -62,7 +70,7 @@ public class Database {
 			this.hash.add(name, new PrincipalNode(address));
 			return true;
 		}
-		System.out.println("Ese nombre ya est· registrado.");
+		System.out.println("Ese nombre ya est√° registrado.");
 		return false;
 	}
 	
@@ -71,7 +79,7 @@ public class Database {
 			this.hash.getValue(name).address=address;
 			return true;
 		}
-		System.out.println("Ese nombre no est· registrado.");
+		System.out.println("Ese nombre no est√° registrado.");
 		return false;
 	}
 	
@@ -85,7 +93,7 @@ public class Database {
 			return true;
 		}
 		else{
-			System.out.println("Ese nombre no est· registrado. ");
+			System.out.println("Ese nombre no est√° registrado. ");
 			return false;
 		}
 	}
@@ -94,7 +102,7 @@ public class Database {
 		if(this.personExists(name)){
 			return this.hash.getValue(name).address;
 		}
-		return "Ese nombre no est· registrado.";
+		return "Ese nombre no est√° registrado.";
 	}
 	
 	public void insertInvoice(String name, int invoiceNumber, String item, int expense){
@@ -118,7 +126,7 @@ public class Database {
 	public static void main(String[] args){
 		Database db = new Database();
 		db.insertNewPerson("Ana Olvera","La Estancia #13");
-		System.out.println(db.getAddress("JosÈ Olvera"));
+		System.out.println(db.getAddress("Jos√© Olvera"));
 		db.deletePerson("Ana Olvera");
 		db.outputTableOne();
 		
