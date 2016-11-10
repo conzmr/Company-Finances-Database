@@ -97,34 +97,91 @@ public class AVLTree<E>{
 			node.right = insert(element,node.right,key);
 		}
 		else;
-		//Balancear árbol al final de la inserción
+		//Balancear Ã¡rbol al final de la inserciÃ³n
 		return balance(node);
+	}
+	
+	/**
+	 * This method deletes the node corresponding to a given key.
+	 * If the key does not exist, does nothing.
+	 * @param key	the key of the node to be deleted
+	 */
+	public void delete(Integer key) {
+		this.root = delete(this.root, key);
+	}
+	
+	/**
+	 * This (recursive) helper method deletes the node corresponding to a given key from a given tree.
+	 * @param n		the root of the tree
+	 * @param key	the key of the node to be deleted
+	 * @return		the root of the new tree
+	 */
+	private AVLNode<E> delete(AVLNode<E> n, Integer key) {
+		// Base case: key doesn't exist.
+		if (n == null) return null;
+		// If it's in the left sub-tree, go left.
+		if (key.compareTo(n.key) < 0) {
+			n.left=delete(n.left, key);
+			return balance(n); // Deleting may have unbalanced tree.
+		} 
+		// If it's in the right sub-tree, go right.
+		else if (key.compareTo(n.key) > 0) {
+			n.right=delete(n.right, key);
+			return balance(n); // Deleting may have unbalanced tree.
+		} 
+		// Else, we found it! Remove n.
+		else {
+			// 0 children
+			if (n.left == null && n.right == null)
+				return null;
+			// 1 child - guaranteed to be balanced.
+			if (n.left == null)
+				return n.right;
+			if (n.right == null)
+				return n.left;
+			// 2 children - deleting may have unbalanced tree.
+			Integer smallestKey = smallest(n.right);
+			n.key=smallestKey;
+			n.right = delete(n.right, smallestKey);
+			return balance(n);
+		}
+	}
+	
+	/**
+	 * This method returns the smallest key in a given tree.
+	 * @param n	the root of the tree to be searched
+	 * @return	the smallest key in the tree rooted at n
+	 */
+	private Integer smallest(AVLNode<E> n) {
+		if (n.left == null)
+			return n.key;
+		return smallest(n.left);
 	}
 	
 	private AVLNode<E> balance(AVLNode<E> node) {
 		if(node == null){
-			System.out.println("se agregó: " + node.element);
+			System.out.println("se agregÃ³: " + node.element);
 			return node;
 		}
 		//Si la altura del izquierdo menos la del derecho es mayor a 1
 		if(this.height(node.left) - this.height(node.right)>ALLOWED_IMBALANCE){
 			if(this.height(node.left.left)>=this.height(node.left.right)){
-				//Cuando el leftChild es mayor, sólo se necesita una rotación simple
+				//Cuando el leftChild es mayor, sÃ³lo se necesita una rotaciÃ³n simple
 				node = rotateWithLeftChild(node);
 			}
 			else{
-				//Cuando el rightChild es mayor, se requiere doble rotación
+				//Cuando el rightChild es mayor, se requiere doble rotaciÃ³n
 				node = doubleWithLeftChild(node);
 			}
 		}
 		//Si la altura del derecho menos la del izquierdo es mayor a 1
 		else if(this.height(node.right) - this.height(node.left)>ALLOWED_IMBALANCE){
 			if(this.height(node.right.right)>=this.height(node.right.left)){
-				//Cuando el rightChild es mayor, sólo se necesita una rotación simple
+				//Cuando el rightChild es mayor, sÃ³lo se necesita una rotaciÃ³n simple
 				node = rotateWithRightChild(node);
 			}
 			else{
-				//Cuando el leftChild es mayor, se requiere doble rotación
+				//Cuando el leftChild es mayor, se requiere doble rotaciÃ³n
 				node = doubleWithRightChild(node);
 			}
 		}
@@ -134,7 +191,7 @@ public class AVLTree<E>{
 	}
 	
 	private AVLNode<E> rotateWithLeftChild(AVLNode<E> nodeX){
-		//Hace una rotación del nodo hacia la derecha
+		//Hace una rotaciÃ³n del nodo hacia la derecha
 		AVLNode<E> nodeY = nodeX.left;
 		nodeX.left = nodeY.right;
 		nodeY.right = nodeX;
@@ -144,7 +201,7 @@ public class AVLTree<E>{
 	}
 	
 	private AVLNode<E> rotateWithRightChild(AVLNode<E> nodeX){
-		//Hace una rotación del nodo hacia la izquierda
+		//Hace una rotaciÃ³n del nodo hacia la izquierda
 		AVLNode<E> nodeY = nodeX.right;
 		nodeX.right = nodeY.left;
 		nodeY.left = nodeX;
