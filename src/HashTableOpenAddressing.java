@@ -1,7 +1,7 @@
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class HashTableOpenAddressing<Key, Value> implements DictionaryInterface<Key, Value>{
+public class HashTableOpenAddressing<Key, Value> {
 	private int size;
 	private int capacity; 
 	private double loadFactor;
@@ -127,88 +127,10 @@ public class HashTableOpenAddressing<Key, Value> implements DictionaryInterface<
 		return findKeyIndex(k)!=-1;
 	}
 
-	public Iterator<Key> getKeyIterator() {
-		return new KeysIterator();
+	public Value getValue(int i){
+		return this.table[i].value;
 	}
 
-	public Iterator<Value> getValueIterator() {
-		return new ValuesIterator();
-	}
-	
-	public Iterator<Node<Key, Value>> getNodeIterator(){
-		return new NodeIterator();
-	}
-	
-	private class NodeIterator implements Iterator<Node<Key, Value>>{
-		private int nextIndex;
-		
-		public NodeIterator(){
-			this.nextIndex=0;
-		}
-
-		public boolean hasNext() {
-			return nextIndex<table.length;
-		}
-
-		public Node<Key, Value> next() {
-			if(this.hasNext()){
-				nextIndex++;
-				return table[nextIndex-1];
-			}
-			throw new IndexOutOfBoundsException("No next element.");
-		}
-		
-	}
-
-	private class KeysIterator<Key> implements Iterator<Key> {
-		private int nextIndex,
-		itElements;
-
-		public KeysIterator() {
-			this.nextIndex = 0;
-			this.itElements = 0; 
-		}
-
-		public boolean hasNext() {
-			return this.itElements<size;
-		}
-
-		public Key next() {
-			while(this.hasNext()){
-				this.nextIndex++;
-				if(table[this.nextIndex]!=null){
-					this.itElements++;
-					return (Key) table[this.nextIndex-1].key;
-				}
-			}
-			throw new NoSuchElementException("No elements.");
-		}
-	}
-	
-	private class ValuesIterator<Value> implements Iterator<Value> {
-		private int nextIndex,
-		itElements;
-
-		public ValuesIterator() {
-			this.nextIndex = 0;
-			this.itElements = 0; 
-		}
-
-		public boolean hasNext() {
-			return this.itElements<size;
-		}
-
-		public Value next() {
-			while(this.hasNext()){
-				this.nextIndex++;
-				if(table[this.nextIndex]!=null){
-					this.itElements++;
-					return (Value) table[this.nextIndex-1].value;
-				}
-			}
-			throw new NoSuchElementException("No elements.");
-		}
-	}
 
 	public boolean isEmpty() {
 		return this.size==0;
