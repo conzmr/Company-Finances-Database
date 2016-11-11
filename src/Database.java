@@ -16,7 +16,7 @@ public class Database {
 	
 	private class PrincipalNode{
 		String address;
-		AVLTree<HashTableOpenAddressing<String, Integer>> avl;
+		AVLTree<HashTableOpenAddressing<Integer, HashNode>> avl;
 		
 		private PrincipalNode(String address){
 			this.address=address;
@@ -27,11 +27,19 @@ public class Database {
 			//Modificar cualquiera de los dos pero no se pueden modificar las keys. 
 		}
 		
+		private int hashVal(String item, int price){
+		    int hashKey= 0;
+		    for(int i=0;i<item.length();i++){
+		    	hashKey +=(int)item.charAt(i);
+		    }
+		    return hashKey+price;
+		}
+		
 		private void insertItems(Integer invoiceNumber, String item, Integer amount){
 			if(!this.invoiceExists(invoiceNumber)){
 				this.avl.insert(new HashTableOpenAddressing<>(), invoiceNumber);
 			}
-			this.avl.get(invoiceNumber).add(item, amount);
+			this.avl.get(invoiceNumber).add(this.hashVal(item, amount), new HashNode(item, amount)); 
 		}
 		
 		private boolean removeItems(Integer invoiceNumber, String item, Integer amount){
@@ -39,8 +47,11 @@ public class Database {
 				System.out.println("El número de factura es inválido. ");
 				return false;
 			}
-			//eliminar item sólo si el item y la amount coinciden.
-			return true;
+			if(this.avl.get(invoiceNumber).contains(this.hashVal(item, amount))){
+				this.avl.get(invoiceNumber).remove(this.hashVal(item, amount));
+				return true;
+			}; 
+			return false;
 		}
 		
 		private boolean invoiceExists(int invoiceNumber){
@@ -59,6 +70,15 @@ public class Database {
 			return this.address;
 		}
 		
+		private class HashNode{
+			String item;
+			int expense;
+			
+			private HashNode(String item, int expense){
+				this.item=item;
+				this.expense=expense;
+			}
+		}
 	}
 	
 	public Database(){
