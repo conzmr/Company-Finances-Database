@@ -12,6 +12,7 @@ public class HashTableOpenAddressing<Key, Value> {
 	private static class Node<Key,Value>{
 		Key key;
 		Value value;
+		Node<Key,Value> next;
 
 		public Node(Key key, Value value){
 			this.key=key;
@@ -127,7 +128,7 @@ public class HashTableOpenAddressing<Key, Value> {
 		return findKeyIndex(k)!=-1;
 	}
 
-	public Value getValue(int i){
+	public Value getVal(int i){
 		return this.table[i].value;
 	}
 
@@ -178,4 +179,66 @@ public class HashTableOpenAddressing<Key, Value> {
 		this.table=newTable;
 		this.capacity=this.capacity*2;
 	}
+	
+	public Iterator<Value> getIteratorValue(){
+		return new ValueIterator();
+	}
+	
+	public Iterator<Key> getIteratorKey(){
+		return new KeyIterator();
+	}
+	
+	private abstract class HashIterator<E> implements Iterator<E>{
+		Node<Key,Value> next;
+		int index;
+
+		public HashIterator(){
+			if(size>0){
+				while(this.index<capacity && table[this.index]==null){
+					this.index++;
+				}
+				this.next = table[this.index];
+			}
+		}
+
+		public boolean hasNext(){
+			return this.next != null;
+		}
+
+		public Node<Key,Value> nextNode(){
+			Node<Key,Value> elem = this.next;
+			if(elem == null){
+				throw new NoSuchElementException();
+			}
+			if(this.next.next !=null){
+				this.next = this.next.next;
+			}
+			else{
+				this.index++;
+				while(this.index<capacity && table[this.index]==null){
+					this.index++;
+				}
+				if(this.index<capacity){
+					this.next = table[this.index];
+				}
+				else{
+					this.next=null;
+				}
+			}
+			return elem;
+		}
+	}
+
+	private class ValueIterator extends HashIterator<Value>{
+		public Value next() {
+			return nextNode().value;
+		}
+	}
+	
+	private class KeyIterator extends HashIterator<Key>{
+		public Key next(){
+			return nextNode().key;
+		}
+	}
+
 }

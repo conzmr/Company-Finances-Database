@@ -1,8 +1,6 @@
-/*
- * Falta método que compare dos usuario
- * Y métodos totalPayments y totalExpenses
- * Además formas de imprimir cada tabla.
- * */
+import java.util.Iterator;
+
+ /* Además formas de imprimir cada tabla.*/
 
 
 public class Database {
@@ -14,29 +12,42 @@ public class Database {
 		
 		private PrincipalNode(String address){
 			this.address=address;
-			this.avl= new AVLTree<>();
+			this.avl= new AVLTree<AVLNode>();
 		}
 		
-		private int expensesPerInvoice(int invoiceNumber){
+		/*private int expensesPerInvoice(int invoiceNumber){
 			int total=0;
 			if(this.invoiceExists(invoiceNumber)){
 				for(int i=0; i<this.avl.get(invoiceNumber).hash.getSize(); i++){
 					HashNode node = this.avl.get(invoiceNumber).hash.getValue(i);
-					total+=node.expense;
+						total+=node.expense;
 				}
 			}
 			else{
 				System.out.println("Ese número de factura es inválido.");
 			}
 			return total;
+		}*/
+		
+		private int expensesPerInvoice(int invoiceNumber){
+			int total = 0;
+			Iterator<HashNode> it = this.avl.get(invoiceNumber).hash.getIteratorValue();
+			while(it.hasNext()){
+				total += it.next().expense;
+			}
+			return total;
 		}
 		
-		private void updateItems(Integer invoiceNumber, String oldItem, Integer oldAmount, String newItem){
-			//Modificar cualquiera de los dos pero no se pueden modificar las keys. 
+		private void updateItems(Integer invoiceNumber, String oldItem, Integer oldAmount, String newItem, Integer newAmount){
+			int key = this.hashVal(oldItem, oldAmount);
+			HashNode curr = this.avl.get(invoiceNumber).hash.getValue(key);
+			if(newAmount != null){
+				curr.expense = newAmount;
+			}
+			if(newItem != null){
+				curr.item = newItem;
+			}
 		}
-		
-		//Para totalPayments y total expenses necesito recorrer el avltree para sumar todos los payments 
-		//de cada nodo o a su vez obteniendo cada nodo correr el método de total expenses y así.
 		
 		private int totalPayments(){
 			int total=0;
@@ -44,7 +55,24 @@ public class Database {
 				System.out.println("Este usuario no tienen pagos registrados.");
 			}
 			else{
-				//Recorrer el árbol y sumar el payment de cada AVLNode a total.
+				Iterator<AVLNode> avlIt = this.avl.getValueIterator();
+				while(avlIt.hasNext()){
+					total += avlIt.next().payment;
+				}
+			}
+			return total;
+		}
+		
+		public int totalExpenses(){
+			int total=0;
+			if(this.avl.isEmpty()){
+				System.out.println("Este usuario no tienen pagos registrados.");
+			}
+			else{
+				Iterator<AVLNode> avlIt = this.avl.getValueIterator();
+				while(avlIt.hasNext()){
+					total += this.expensesPerInvoice(avlIt.next().invoiceNumber);
+				}
 			}
 			return total;
 		}
@@ -55,6 +83,20 @@ public class Database {
 			}
 			System.out.println("Ese número de factura no está registrado. ");
 			return 0;
+		}
+		
+		private int totalEarnings(){
+			int total=0;
+			if(this.avl.isEmpty()){
+				System.out.println("Este usuario no tienen facturas registradas.");
+			}
+			else{
+				Iterator<AVLNode> avlIt = this.avl.getValueIterator();
+				while(avlIt.hasNext()){
+					total += this.earningsPerInvoice(avlIt.next().invoiceNumber);
+				}
+			}
+			return total;
 		}
 		
 		private boolean updatePayment(int invoiceNumber, int payment){
@@ -105,8 +147,8 @@ public class Database {
 		}
 		
 		private boolean insertInvoice(int invoiceNumber, int payment){
-			if(this.avl.contains(invoiceNumber)){
-				this.avl.insert(new AVLNode(payment), invoiceNumber);
+			if(!this.avl.contains(invoiceNumber)){
+				this.avl.insert(new AVLNode(payment, invoiceNumber), invoiceNumber);
 				return true;
 			}
 			System.out.println("Ya existe ese número de factura. ");
@@ -126,12 +168,14 @@ public class Database {
 		}
 		
 		private class AVLNode{
-			int payment;
+			int payment,
+				invoiceNumber;
 			HashTableOpenAddressing<Integer, HashNode> hash;
 			
-			private AVLNode(Integer payment){
+			private AVLNode(Integer payment, Integer invoice){
 				this.payment=payment;
-				this.hash= new HashTableOpenAddressing<>();
+				this.invoiceNumber = invoice;
+				this.hash= new HashTableOpenAddressing<Integer,HashNode>();
 			}
 		}
 		private class HashNode{
@@ -192,13 +236,16 @@ public class Database {
 			return false;
 		}
 	}
-	/*
-	public boolean updatePersonName(String name){
+
+	public boolean updatePersonName(String name, String newName){
 		if(this.personExists(name)){
-			//Modificar la key, que se rehashee pero no se pierda nada
+			PrincipalNode newNode = this.hash.getValue(name);
+			this.hash.remove(name);
+			this.hash.add(newName, newNode);
+			return true;
 		}
+		return false;
 	}
-	*/
 	
 	public boolean personExists(String name){
 		return this.hash.contains(name);
@@ -256,6 +303,10 @@ public class Database {
 		return 0;
 	}
 	
+	public void updateItems(String name, Integer invoiceNumber, String oldItem, Integer oldAmount, String newItem, Integer newAmount){
+		this.hash.getValue(name).updateItems(invoiceNumber, oldItem, oldAmount, newItem, newAmount);
+	}
+	
 	public void outputTableOne(){
 		this.hash.output();
 	}
@@ -265,16 +316,52 @@ public class Database {
 		sb.append("---------------------------------\n");
 		/*
 		 * Imprimir toda la tabla
-		 * Checar iteradores key y value de HTOA
 		*/
+	}
+	
+	public int totalPayments(String name){
+		return this.hash.getValue(name).totalPayments();
+	}
+	
+	public int totalExpenses(String name){
+		return this.hash.getValue(name).totalExpenses();
+	}
+	
+	public int totalEarnings(String name){
+		return this.hash.getValue(name).totalEarnings();
+	}
+	
+	public int compareExpenses(String name1, String name2){
+		return Math.abs(this.totalExpenses(name1)-this.totalExpenses(name2));
 	}
 
 	public static void main(String[] args){
 		Database db = new Database();
 		db.insertNewPerson("Ana Olvera","La Estancia #13");
-		System.out.println(db.getAddress("José Olvera"));
 		db.outputTableOne();
 		
+		db.insertInvoice("Ana Olvera", 010, 100);
+		db.insertInvoice("Ana Olvera", 011, 100);
+		db.insertInvoice("Ana Olvera", 012, 100);
+		db.insertInvoice("Ana Olvera", 013, 100);
+		db.insertItem("Ana Olvera", 010, "Beer", 30);
+		db.insertItem("Ana Olvera", 010, "Water", 20);
+		db.insertItem("Ana Olvera", 011, "Cookies", 10);
+		db.insertItem("Ana Olvera", 012, "Berenjena", 5);
+		db.updatePersonName("Ana Olvera", "Anita");
+		db.updateItems("Anita", 010, "Beer", 30, "Tequila", 100);
+		System.out.println(db.totalPayments("Anita"));
+		System.out.println(db.totalExpenses("Anita"));
+		System.out.println(db.totalEarnings("Anita"));
+		
+		db.insertNewPerson("Pedrin", "Su casa");
+		db.insertInvoice("Pedrin", 014, 110);
+		db.insertInvoice("Pedrin", 015, 110);
+		db.insertItem("Pedrin", 014, "Beer", 30);
+		db.insertItem("Pedrin", 015, "Water", 20);
+		
+		System.out.println(db.compareExpenses("Anita", "Pedrin"));
+		db.outputTableOne();
 	}
 
 }

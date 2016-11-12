@@ -1,9 +1,13 @@
+import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Stack;
+
+import javax.swing.plaf.synth.SynthSpinnerUI;
 
 public class AVLTree<E>{
 	AVLNode<E> root;
 	private static final int ALLOWED_IMBALANCE = 1;
-	
+
 	public AVLTree(){
 		this.root = null;
 	}
@@ -16,11 +20,11 @@ public class AVLTree<E>{
 			return "";
 		}
 	}
-	
+
 	public boolean isEmpty(){
 		return this.root==null;
 	}
-	
+
 	public boolean contains(Integer key){
 		if(!this.isEmpty()){
 			AVLNode<E> nodo = this.root; 
@@ -40,7 +44,7 @@ public class AVLTree<E>{
 		}
 		return false;
 	}
-	
+
 	public E get(Integer key){
 		if(this.isEmpty()){
 			throw new NoSuchElementException("Tree is empty. ");
@@ -61,7 +65,7 @@ public class AVLTree<E>{
 		}
 		return null;
 	}
-	
+
 	private String inOrder(AVLNode<E> x){
 		String output = "";
 		if(x.left != null){
@@ -73,7 +77,7 @@ public class AVLTree<E>{
 		}
 		return output;
 	}
-	
+
 	public void insert(E element, Integer key){
 		if(this.root != null){
 			this.root = this.insert(element,this.root,key);
@@ -82,7 +86,7 @@ public class AVLTree<E>{
 			this.root = new AVLNode<E>(element,null,null,key);
 		}
 	}
-	
+
 	private AVLNode<E> insert(E element, AVLNode<E> node, Integer key){
 		if(node == null){
 			return new AVLNode<E>(element, null, null,key);
@@ -100,7 +104,7 @@ public class AVLTree<E>{
 		//Balancear árbol al final de la inserción
 		return balance(node);
 	}
-	
+
 	/**
 	 * This method deletes the node corresponding to a given key.
 	 * If the key does not exist, does nothing.
@@ -109,7 +113,7 @@ public class AVLTree<E>{
 	public void delete(Integer key) {
 		this.root = delete(this.root, key);
 	}
-	
+
 	/**
 	 * This (recursive) helper method deletes the node corresponding to a given key from a given tree.
 	 * @param n		the root of the tree
@@ -146,7 +150,7 @@ public class AVLTree<E>{
 			return balance(n);
 		}
 	}
-	
+
 	/**
 	 * This method returns the smallest key in a given tree.
 	 * @param n	the root of the tree to be searched
@@ -157,7 +161,7 @@ public class AVLTree<E>{
 			return n.key;
 		return smallest(n.left);
 	}
-	
+
 	private AVLNode<E> balance(AVLNode<E> node) {
 		if(node == null){
 			System.out.println("se agregó: " + node.element);
@@ -187,9 +191,9 @@ public class AVLTree<E>{
 		}
 		node.height = Math.max(this.height(node.left), this.height(node.right))+1;
 		return node;
-		
+
 	}
-	
+
 	private AVLNode<E> rotateWithLeftChild(AVLNode<E> nodeX){
 		//Hace una rotación del nodo hacia la derecha
 		AVLNode<E> nodeY = nodeX.left;
@@ -199,7 +203,7 @@ public class AVLTree<E>{
 		nodeY.height = Math.max(this.height(nodeY.left), nodeX.height)+1;
 		return nodeY;
 	}
-	
+
 	private AVLNode<E> rotateWithRightChild(AVLNode<E> nodeX){
 		//Hace una rotación del nodo hacia la izquierda
 		AVLNode<E> nodeY = nodeX.right;
@@ -209,7 +213,7 @@ public class AVLTree<E>{
 		nodeY.height = Math.max(nodeX.height, this.height(nodeY.right))+1;
 		return nodeY;
 	}
-	
+
 	private AVLNode<E> doubleWithLeftChild(AVLNode<E> node){
 		//Primero rota a la izquierda el leftchild y luego rota node a la derecha
 		node.left = this.rotateWithRightChild(node.left);
@@ -221,20 +225,24 @@ public class AVLTree<E>{
 		node.right = this.rotateWithLeftChild(node.right);
 		return this.rotateWithRightChild(node);	
 	}
-	
+
 	private int height(AVLNode<E> n){
 		if(n == null){
 			return 0;
 		}
 		return n.height;
 	}
-	
-	private class AVLNode<E>{
+
+	public AVLIterator<E> getValueIterator(){
+		return new AVLIterator<E>(this.root);
+	}
+
+	private static class AVLNode<E>{
 		E element;
 		AVLNode<E> left,right;
 		int height;
 		Integer key;
-		
+
 		public AVLNode(E element, AVLNode<E> left, AVLNode<E> right, Integer key){
 			this.element = element;
 			this.left = left;
@@ -242,19 +250,50 @@ public class AVLTree<E>{
 			this.height = 1;
 			this.key = key;
 		}
-		
+
 		public String toString(){
 			return "[" +this.key +":"+ this.element + "-" + this.height + "]";
 		}
+
 	}
-	
-	public static void main(String[] args){
-		AVLTree<Integer> tree = new AVLTree<Integer>();
-		tree.insert(84, 2);
-		tree.insert(10, 3);
-		tree.insert(8, 4);
-		System.out.println(tree.inOrder());
-		System.out.println(tree.get(2));
+
+	private class AVLIterator<E> implements Iterator<E>{
+
+		private Stack<AVLNode<E>> stack = new Stack<>();
+		private AVLNode<E> next;
+
+		public AVLIterator(AVLNode<E> node) {
+			this.next = node;
+		}
+
+		public E next() {
+			while (this.next != null) {
+				this.stack.push(this.next);
+				this.next = this.next.left;
+			}
+
+			this.next = this.stack.pop();
+			AVLNode<E> node = this.next;
+			this.next = this.next.right;
+
+			return node.element;
 	}
+
+	public boolean hasNext() {
+		return (!this.stack.isEmpty() || this.next != null);
+	}
+}
+
+public static void main(String[] args){
+	AVLTree<Integer> tree = new AVLTree<Integer>();
+	tree.insert(84, 2);
+	tree.insert(10, 3);
+	tree.insert(8, 4);
+	System.out.println(tree.inOrder());
+	System.out.println(tree.get(2));
+	Iterator<Integer> it = tree.getValueIterator();
+	System.out.println(it.next());
+	System.out.println(it.next());
+}
 
 }
