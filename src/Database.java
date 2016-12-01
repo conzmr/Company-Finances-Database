@@ -1,34 +1,39 @@
 import java.util.Iterator;
-
- /* Además formas de imprimir cada tabla.*/
-
-
+/**
+ * Implementation of the Company Finances Database using HashTableOpenAddressing and AVL Tree.
+ * @author Constanza Madrigal Reyes 
+ * @author Julia Paola Orduño 
+ */
 public class Database {
 	private HashTableOpenAddressing<String, PrincipalNode> hash;
 
+	/**
+	 * Nested class, PrincipalNode, which represents the
+	 * containers for value of the HashTable elements for the 
+	 * Names' table. 
+	 * @author Constanza Madrigal Reyes 
+	 * @author Julia Paola Orduño 
+	 */
 	private class PrincipalNode{
 		String address;
 		AVLTree<AVLNode> avl;
 		
+		/**
+		 * Creates a Node with a String containing 
+		 * the address and an AVL Tree.
+		 * @param String - address.
+		 */
 		private PrincipalNode(String address){
 			this.address=address;
 			this.avl= new AVLTree<AVLNode>();
 		}
 		
-		/*private int expensesPerInvoice(int invoiceNumber){
-			int total=0;
-			if(this.invoiceExists(invoiceNumber)){
-				for(int i=0; i<this.avl.get(invoiceNumber).hash.getSize(); i++){
-					HashNode node = this.avl.get(invoiceNumber).hash.getValue(i);
-						total+=node.expense;
-				}
-			}
-			else{
-				System.out.println("Ese número de factura es inválido.");
-			}
-			return total;
-		}*/
-		
+		/**
+		 * Calculates the total expenses of an invoice 
+		 * contained in the AVLNode. 
+		 * @param int - Number of the invoice.
+		 * @return int - total expenses. 
+		 */
 		private int expensesPerInvoice(int invoiceNumber){
 			int total = 0;
 			Iterator<HashNode> it = this.avl.get(invoiceNumber).hash.getIteratorValue();
@@ -38,6 +43,14 @@ public class Database {
 			return total;
 		}
 		
+		/**
+		 * Updates the information of an specific item. 
+		 * @param Integer - Number of the invoice.
+		 * @param String - Current name of the item.
+		 * @param Integer - Current amount of the item.
+		 * @param String - New name of the item.
+		 * @param Integer New amount of the item.
+		 */
 		private void updateItems(Integer invoiceNumber, String oldItem, Integer oldAmount, String newItem, Integer newAmount){
 			int key = this.hashVal(oldItem, oldAmount);
 			HashNode curr = this.avl.get(invoiceNumber).hash.getValue(key);
@@ -49,6 +62,10 @@ public class Database {
 			}
 		}
 		
+		/**
+		 * Calculates the total payments of an employee. 
+		 * @return int - total amount of the payments. 
+		 */
 		private int totalPayments(){
 			int total=0;
 			if(this.avl.isEmpty()){
@@ -63,6 +80,10 @@ public class Database {
 			return total;
 		}
 		
+		/**
+		 * Calculates the total expenses of an employee.
+		 * @return int - total expenses. 
+		 */
 		public int totalExpenses(){
 			int total=0;
 			if(this.avl.isEmpty()){
@@ -77,6 +98,11 @@ public class Database {
 			return total;
 		}
 		
+		/**
+		 * Calculates the total earnings of an specific invoice.  
+		 * @param int - Number of the invoice.
+		 * @return int - total earnings. 
+		 */
 		private int earningsPerInvoice(int invoiceNumber){
 			if(this.invoiceExists(invoiceNumber)){
 				return this.avl.get(invoiceNumber).payment-this.expensesPerInvoice(invoiceNumber);
@@ -85,6 +111,10 @@ public class Database {
 			return 0;
 		}
 		
+		/**
+		 * Calculates the total expenses of an employee. 
+		 * @return int - total earnings. 
+		 */
 		private int totalEarnings(){
 			int total=0;
 			if(this.avl.isEmpty()){
@@ -99,15 +129,27 @@ public class Database {
 			return total;
 		}
 		
-		private boolean updatePayment(int invoiceNumber, int payment){
+		/**
+		 * Updates the payment amount of an specific invoice. 
+		 * @param int - Number of the invoice.
+		 * @param int - New amount of the payment.
+		 */
+		private void updatePayment(int invoiceNumber, int payment){
 			if(this.invoiceExists(invoiceNumber)){
 				this.avl.get(invoiceNumber).payment=payment;
-				return true;
 			}
-			System.out.println("Ese número de factura no existe");
-			return false;
+			else{
+				System.out.println("Ese número de factura no existe");
+			}
 		}
 		
+		/**
+		 * Returns a hash value as a combination of the 
+		 * name and price of an item.
+		 * @param String - Name of the item.
+		 * @param int - Price of the item.
+		 * @return int - hash value.  
+		 */
 		private int hashVal(String item, int price){
 		    int hashKey= 0;
 		    for(int i=0;i<item.length();i++){
@@ -116,6 +158,12 @@ public class Database {
 		    return hashKey+price;
 		}
 		
+		/**
+		 * Inserts new item in an specific invoice. 
+		 * @param int - Number of the invoice.
+		 * @param String - Name of the item.
+		 * @param int - Amount.
+		 */
 		private void insertItems(int invoiceNumber, String item, int amount){
 			if(!this.invoiceExists(invoiceNumber)){
 				System.out.println("Ese número de factura no existe. ");
@@ -130,58 +178,103 @@ public class Database {
 			}
 		}
 		
-		private boolean removeItems(Integer invoiceNumber, String item, Integer amount){
+		/**
+		 * Removes an specific item of an specific invoice. 
+		 * @param Integer - Number of the invoice.
+		 * @param String - Name of the item. 
+		 * @param Integer - Amount of the item. 
+		 */
+		private void removeItems(Integer invoiceNumber, String item, Integer amount){
 			if(!this.invoiceExists(invoiceNumber)){
 				System.out.println("El número de factura es inválido. ");
-				return false;
 			}
 			if(this.avl.get(invoiceNumber).hash.contains(this.hashVal(item, amount))){
 				this.avl.get(invoiceNumber).hash.remove(this.hashVal(item, amount));
-				return true;
 			} 
-			return false;
 		}
 		
+		/**
+		 * Returns if an invoice number exists.  
+		 * @param int - Number of the invoice.
+		 * @return boolean - Invoice exists or not. 
+		 */
 		private boolean invoiceExists(int invoiceNumber){
 			return this.avl.contains(invoiceNumber);
 		}
 		
-		private boolean insertInvoice(int invoiceNumber, int payment){
+		/**
+		 * Inserts new invoice.   
+		 * @param int - Number of the invoice.
+		 * @param int - Payment. 
+		 */
+		private void insertInvoice(int invoiceNumber, int payment){
 			if(!this.avl.contains(invoiceNumber)){
 				this.avl.insert(new AVLNode(payment, invoiceNumber), invoiceNumber);
-				return true;
 			}
-			System.out.println("Ya existe ese número de factura. ");
-			return false;
+			else{
+				System.out.println("Ya existe ese número de factura. ");
+			}
 		}
 		
-		private boolean deleteInvoice(int invoiceNumber){
+		/**
+		 * Deletes an specific invoice. 
+		 * @param int - Number of the invoice.
+		 */
+		private void deleteInvoice(int invoiceNumber){
 			if(this.invoiceExists(invoiceNumber)){
 				this.avl.delete(invoiceNumber);
-				return true;
 			}
-			return false;
 		}
 		
+		/**
+		 * Returns the address. 
+		 * @return String - Address.
+		 */
 		public String toString(){
 			return this.address;
 		}
 		
+		/**
+		 * Nested class, AVLNode, which represents the
+		 * containers for values of the AVL elements needed
+		 * to represent Invoices' table.  
+		 * @author Constanza Madrigal Reyes 
+		 * @author Julia Paola Orduño 
+		 */
 		private class AVLNode{
 			int payment,
 				invoiceNumber;
 			HashTableOpenAddressing<Integer, HashNode> hash;
 			
+			/**
+			 * Creates a Node with an Integer payment
+			 * and an Integer invoice.
+			 * @param Integer - Payment.
+			 * @param Integer - Number of the invoice.
+			 */
 			private AVLNode(Integer payment, Integer invoice){
 				this.payment=payment;
 				this.invoiceNumber = invoice;
 				this.hash= new HashTableOpenAddressing<Integer,HashNode>();
 			}
 		}
+		
+		/**
+		 * Nested class, HashNode, which represents the
+		 * containers for registers of the Expenses' table.  
+		 * @author Constanza Madrigal Reyes 
+		 * @author Julia Paola Orduño 
+		 */
 		private class HashNode{
 			String item;
 			int expense;
 			
+			/**
+			 * Creates a Node with an String item
+			 * and an int expense.
+			 * @param String - Name of the item.
+			 * @param int - Expense.
+			 */
 			private HashNode(String item, int expense){
 				this.item=item;
 				this.expense=expense;
@@ -189,25 +282,46 @@ public class Database {
 		}
 	}
 	
+	/**
+	 * Creates a new Database and initialize the outer HashTable. 
+	 */
 	public Database(){
 		this.hash = new HashTableOpenAddressing<>();
 	}
 	
-	public boolean insertNewPerson(String name, String address){
+	/**
+	 * Inserts new employee register in the database.  
+	 * @param String - Name of the employee.
+	 * @param String - Employee address. 
+	 */
+	public void insertNewPerson(String name, String address){
 		if(!this.personExists(name)){
 			this.hash.add(name, new PrincipalNode(address));
-			return true;
 		}
-		System.out.println("Ese nombre ya está registrado.");
-		return false;
+		else{
+			System.out.println("Ese nombre ya está registrado.");
+		}
 	}
 	
+	/**
+	 * Inserts new invoice register for an specific employee. 
+	 * @param String - Name of the employee.
+	 * @param int - Number of the invoice.
+	 * @param int - Payment.
+	 */
 	public void insertInvoice(String name, int invoiceNumber, int payment){
 		if(this.personExists(name)){
 			this.hash.getValue(name).insertInvoice(invoiceNumber, payment);
 		}
 	}
 	
+	/**
+	 * Inserts new item into an invoice for an specific employee. 
+	 * @param String - Name of the employee.
+	 * @param int - Number of the invoice.
+	 * @param String - Name of the item.
+	 * @param int - Expense. 
+	 */
 	public void insertItem(String name, int invoiceNumber, String item, int expense){
 		if(this.personExists(name)){
 			this.hash.getValue(name).insertItems(invoiceNumber, item, expense);
@@ -217,51 +331,74 @@ public class Database {
 		}
 	}
 	
-	public boolean updateAddress(String name, String address){
+	/**
+	 * Updates the address of an employee. 
+	 * @param String - Name of the employee.
+	 * @param String - New address. 
+	 */
+	public void updateAddress(String name, String address){
 		if(this.personExists(name)){
 			this.hash.getValue(name).address=address;
-			return true;
 		}
-		System.out.println("Ese nombre no está registrado.");
-		return false;
+		else{
+			System.out.println("Ese nombre no está registrado.");
+		}
 	}
 	
-	public boolean updatePayment(String name, int invoiceNumber, int payment){
+	/**
+	 * Updates a payment of an invoice of an specific employee. 
+	 * @param String - Name of the employee.
+	 * @param int - Number of the invoice.
+	 * @param int - Payment. 
+	 */
+	public void updatePayment(String name, int invoiceNumber, int payment){
 		if(this.personExists(name)){
 			this.hash.getValue(name).updatePayment(invoiceNumber, payment);
-			return true;
 		}
 		else{
 			System.out.println("Esa persona no está registrada. ");
-			return false;
 		}
 	}
-
-	public boolean updatePersonName(String name, String newName){
+	
+	/**
+	 * Updates the name of an employee. 
+	 * @param String - Current name of the employee.
+	 * @param String - New name of the employee.
+	 */
+	public void updatePersonName(String name, String newName){
 		if(this.personExists(name)){
 			PrincipalNode newNode = this.hash.getValue(name);
 			this.hash.remove(name);
 			this.hash.add(newName, newNode);
-			return true;
 		}
-		return false;
 	}
 	
+	/**
+	 * Returns if an employee exists in the database. 
+	 * @param String - Name of the employee.
+	 */
 	public boolean personExists(String name){
 		return this.hash.contains(name);
 	}
 	
-	public boolean deletePerson(String name){
+	/**
+	 * Deletes an employee from the database. 
+	 * @param String - Name of the employee.
+	 */
+	public void deletePerson(String name){
 		if(this.personExists(name)){
 			this.hash.remove(name);
-			return true;
 		}
 		else{
 			System.out.println("Ese nombre no está registrado. ");
-			return false;
 		}
 	}
 	
+	/**
+	 * Returns the address of an employee. 
+	 * @param String - Name of the employee.
+	 * @return String - Address.
+	 */
 	public String getAddress(String name){
 		if(this.personExists(name)){
 			return this.hash.getValue(name).address;
@@ -269,6 +406,13 @@ public class Database {
 		return "Ese nombre no está registrado.";
 	}
 	
+	/**
+	 * Removes if an item from an invoice from an specific employee. 
+	 * @param String - Name of the employee.
+	 * @param int - Number of the invoice.
+	 * @param String - Name of the item.
+	 * @param int - Expense.
+	 */
 	public void removeItems(String name, int invoiceNumber, String item, int expense){
 		if(this.personExists(name)){
 			this.hash.getValue(name).removeItems(invoiceNumber, item, expense);
@@ -278,6 +422,11 @@ public class Database {
 		}
 	}
 	
+	/**
+	 * Removes an invoice register from an employee. 
+	 * @param String - Name of the employee.
+	 * @param int - Number of the invoice. 
+	 */
 	public void removeInvoices(String name, int invoiceNumber){
 		if(this.personExists(name)){
 			this.hash.getValue(name).deleteInvoice(invoiceNumber);
@@ -287,6 +436,11 @@ public class Database {
 		}
 	}
 	
+	/**
+	 * Returns the total expenses of an invoice from an employee. 
+	 * @param String - Name of the employee.
+	 * @param int - Number of the invoice.
+	 */
 	public int getExpensesPerInvoice(String name, int invoiceNumber){
 		if(this.personExists(name)){
 			return this.hash.getValue(name).expensesPerInvoice(invoiceNumber);
@@ -295,6 +449,11 @@ public class Database {
 		return 0;
 	}
 	
+	/**
+	 * Returns the payment from an invoice of an employee. 
+	 * @param String - Name of the employee.
+	 * @param int - Number of the invoice.
+	 */
 	public int getPayment(String name, int invoiceNumber){
 		if(this.personExists(name)){
 			return this.hash.getValue(name).avl.get(invoiceNumber).payment;
@@ -303,65 +462,49 @@ public class Database {
 		return 0;
 	}
 	
+	/**
+	 * Updates the item information of an invoice from an employee. 
+	 * @param String - Name of the employee.
+	 * @param Integer - Number of the invoice.
+	 * @param String - Current name of the item.
+	 * @param Integer - Current amount. 
+	 * @param String - New name of the item.
+	 * @param Integer - New amount of the item.
+	 */
 	public void updateItems(String name, Integer invoiceNumber, String oldItem, Integer oldAmount, String newItem, Integer newAmount){
 		this.hash.getValue(name).updateItems(invoiceNumber, oldItem, oldAmount, newItem, newAmount);
 	}
 	
-	public void outputTableOne(){
-		this.hash.output();
-	}
-	
-	public void TableOne(){
-		StringBuilder sb = new StringBuilder("|         Name         |        Address      | \n");
-		sb.append("---------------------------------\n");
-		/*
-		 * Imprimir toda la tabla
-		*/
-	}
-	
+	/**
+	 * Returns the total of payments of an employee. 
+	 * @param String - Name of the employee.
+	 */
 	public int totalPayments(String name){
 		return this.hash.getValue(name).totalPayments();
 	}
 	
+	/**
+	 * Returns the total expenses of an employee. 
+	 * @param String - Name of the employee.
+	 */
 	public int totalExpenses(String name){
 		return this.hash.getValue(name).totalExpenses();
 	}
 	
+	/**
+	 * Returns the total earnings of an employee. 
+	 * @param String - Name of the employee.
+	 */
 	public int totalEarnings(String name){
 		return this.hash.getValue(name).totalEarnings();
 	}
 	
+	/**
+	 * Returns the difference between the expenses of two employees. 
+	 * @param String - Name of the employee one.
+	 * @param String - Name of the employee two. 
+	 */
 	public int compareExpenses(String name1, String name2){
 		return Math.abs(this.totalExpenses(name1)-this.totalExpenses(name2));
 	}
-
-	public static void main(String[] args){
-		Database db = new Database();
-		db.insertNewPerson("Ana Olvera","La Estancia #13");
-		db.outputTableOne();
-		
-		db.insertInvoice("Ana Olvera", 010, 100);
-		db.insertInvoice("Ana Olvera", 011, 100);
-		db.insertInvoice("Ana Olvera", 012, 100);
-		db.insertInvoice("Ana Olvera", 013, 100);
-		db.insertItem("Ana Olvera", 010, "Beer", 30);
-		db.insertItem("Ana Olvera", 010, "Water", 20);
-		db.insertItem("Ana Olvera", 011, "Cookies", 10);
-		db.insertItem("Ana Olvera", 012, "Berenjena", 5);
-		db.updatePersonName("Ana Olvera", "Anita");
-		db.updateItems("Anita", 010, "Beer", 30, "Tequila", 100);
-		System.out.println(db.totalPayments("Anita"));
-		System.out.println(db.totalExpenses("Anita"));
-		System.out.println(db.totalEarnings("Anita"));
-		
-		db.insertNewPerson("Pedrin", "Su casa");
-		db.insertInvoice("Pedrin", 014, 110);
-		db.insertInvoice("Pedrin", 015, 110);
-		db.insertItem("Pedrin", 014, "Beer", 30);
-		db.insertItem("Pedrin", 015, "Water", 20);
-		
-		System.out.println(db.compareExpenses("Anita", "Pedrin"));
-		db.outputTableOne();
-	}
-
 }
