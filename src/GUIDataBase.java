@@ -18,6 +18,12 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
+/**
+ *Graphic User Interface for Company Finances Database
+ *@author Constanza Madrigal Reyes
+ *@author Julia Paola Orduño Ahumada 
+ **/
+
 public class GUIDataBase extends JFrame{
 
 	private Database db;
@@ -28,18 +34,18 @@ public class GUIDataBase extends JFrame{
 	public GUIDataBase(){
 		this.db = new Database();
 		this.container = new JPanel();
-		db.insertNewPerson("Julia", "Mi casa");
-		db.insertNewPerson("Constanza", "Tu casa");
-		db.insertNewPerson("Brayan", "Tu cora");
-		db.insertInvoice("Julia", 11, 100);
-		db.insertInvoice("Julia", 12, 101);
-		db.insertInvoice("Julia", 13, 102);
-		db.insertItem("Julia", 11, "Pisto", 30);
-		db.insertItem("Julia", 11, "Comida", 40);
-		db.insertItem("Julia", 11, "Agua", 50);
-		db.insertInvoice("Constanza", 14, 103);
-		db.insertInvoice("Constanza", 15, 104);
-		db.insertInvoice("Brayan", 16, 105);
+		db.insertNewPerson("José González", "Leyva #997");
+		db.insertNewPerson("María Chávez", "10 de Mayo #1025");
+		db.insertNewPerson("Alejandro Pérez", "Santa Margarita #550");
+		db.insertInvoice("José González", 11, 100);
+		db.insertInvoice("José González", 12, 101);
+		db.insertInvoice("José González", 13, 102);
+		db.insertItem("José González", 11, "Pintura", 30);
+		db.insertItem("José González", 11, "Detergente", 40);
+		db.insertItem("José González", 11, "Agua", 50);
+		db.insertInvoice("María Chávez", 14, 103);
+		db.insertInvoice("María Chávez", 15, 104);
+		db.insertInvoice("Alejandro Pérez", 16, 105);
 
 		this.setTableNames();
 		this.setTableInvoices();
@@ -76,9 +82,7 @@ public class GUIDataBase extends JFrame{
 				Object invoice = tableInvoices.table.getValueAt(tableInvoices.table.getSelectedRow(), 1);
 				Object currPayment = tableInvoices.currentValue;
 				Object newPayment = tableInvoices.table.getValueAt(tableInvoices.table.getSelectedRow(), tableInvoices.table.getSelectedColumn());
-				try{
-					System.out.println(db.updatePayment(name.toString(), (Integer) invoice, (Integer) newPayment));
-				}catch(ClassCastException e1){
+				try{}catch(ClassCastException e1){
 					JOptionPane.showMessageDialog(tableInvoices.table,"Must be a number");
 					tableInvoices.table.setValueAt(currPayment, tableInvoices.table.getSelectedRow(), tableInvoices.table.getSelectedColumn());
 				}
@@ -259,13 +263,13 @@ public class GUIDataBase extends JFrame{
 							Object oldItem = tableExpenses.currentValue;
 							Object amount = tableExpenses.table.getValueAt(tableExpenses.table.getSelectedRow(), 2);
 							Object newItem = tableExpenses.table.getValueAt(tableExpenses.table.getSelectedRow(), 1);
-							System.out.println(db.updateItems(name.toString(), (Integer) invoice, oldItem.toString(), (Integer) amount, newItem.toString(), null));
+db.updateItems(name.toString(), (Integer) invoice, oldItem.toString(), (Integer) amount, newItem.toString(), null);
 						}
 						else if(tableExpenses.table.getSelectedColumn()==2){
 							Object oldAmount = tableExpenses.currentValue;
 							Object item = tableExpenses.table.getValueAt(tableExpenses.table.getSelectedRow(), 1);
 							Object newAmount = tableExpenses.table.getValueAt(tableExpenses.table.getSelectedRow(), 2);
-							System.out.println(db.updateItems(name.toString(), (Integer) invoice, item.toString(), (Integer) oldAmount, null, (Integer) newAmount));
+							db.updateItems(name.toString(), (Integer) invoice, item.toString(), (Integer) oldAmount, null, (Integer) newAmount);
 						}
 					}
 				});
