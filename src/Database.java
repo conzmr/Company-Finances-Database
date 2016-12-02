@@ -234,6 +234,68 @@ public class Database {
 			return this.address;
 		}
 		
+		private int numExpenses(){
+			int total = 0;
+			Iterator<AVLNode> itAvl = this.avl.getValueIterator();
+			while(itAvl.hasNext()){
+				total += itAvl.next().hash.getSize();
+			}
+			return total;
+		}		
+		private Object[][] getTableExpenses(int invoiceNumber){
+			HashTableOpenAddressing<Integer, HashNode> table = this.avl.get(invoiceNumber).hash;
+			Iterator<HashNode> itHash = table.getIteratorValue();
+			Object[][] data = new Object[table.getSize()][3];
+			HashNode next;
+			for (int i = 0; i < data.length; i++) {
+				next = itHash.next();
+				for (int j = 0; j < data.length; j++) {
+					data[i][0] = invoiceNumber;
+					data[i][1] = next.item;
+					data[i][2] = next.expense;
+				}
+			}
+			return data;
+		}
+		
+		private Object[][] getTableTotalExpense(String name){
+			Iterator<AVLNode> itAvl = this.avl.getValueIterator();
+			Object[][] data = new Object[this.numExpenses()+1][3];
+			int i = 0;
+			while(itAvl.hasNext()){
+				AVLNode node = itAvl.next();
+				Iterator<HashNode> itHash = node.hash.getIteratorValue();
+				while(itHash.hasNext()){
+					name = i==0?name:"";
+					PrincipalNode.HashNode hnode = itHash.next();
+					data[i][0] = name;
+					data[i][1] = hnode.item;
+					data[i][2] = ""+hnode.expense;
+					i++;
+				}
+			}
+			data[data.length-1][1] = "Total";
+			data[data.length-1][2] = ""+this.totalExpenses();
+			return data;
+		}
+
+
+		private Object[][] getTableTotalPayments(String name){
+			Iterator<AVLNode> itAvl = this.avl.getValueIterator();
+			Object[][] data = new Object[this.avl.size()+1][3];
+			AVLNode node;
+			for (int i = 0; i < data.length-1; i++) {
+				node = itAvl.next();
+				name = i==0?name:"";
+				data[i][0] = name;
+				data[i][1] = ""+node.invoiceNumber;
+				data[i][2] = ""+node.payment;
+			}
+			data[data.length-1][1] = "Total";
+			data[data.length-1][2] = ""+this.totalPayments();
+			return data;
+		}
+		
 		/**
 		 * Nested class, AVLNode, which represents the
 		 * containers for values of the AVL elements needed
@@ -413,7 +475,7 @@ public class Database {
 	 * @param String - Name of the item.
 	 * @param int - Expense.
 	 */
-	public void removeItems(String name, int invoiceNumber, String item, int expense){
+	public void deleteItems(String name, int invoiceNumber, String item, int expense){
 		if(this.personExists(name)){
 			this.hash.getValue(name).removeItems(invoiceNumber, item, expense);
 		}
@@ -427,7 +489,7 @@ public class Database {
 	 * @param String - Name of the employee.
 	 * @param int - Number of the invoice. 
 	 */
-	public void removeInvoices(String name, int invoiceNumber){
+	public void deleteInvoices(String name, int invoiceNumber){
 		if(this.personExists(name)){
 			this.hash.getValue(name).deleteInvoice(invoiceNumber);
 		}
@@ -506,5 +568,64 @@ public class Database {
 	 */
 	public int compareExpenses(String name1, String name2){
 		return Math.abs(this.totalExpenses(name1)-this.totalExpenses(name2));
+	}
+	
+	public String[][] getTableNames(){
+		Iterator<String> itName = this.hash.getIteratorKey();
+		Iterator<PrincipalNode> itAddress = this.hash.getIteratorValue();
+		String[][] data = new String[this.hash.getSize()][2];
+		for (int i = 0; i < data.length; i++) {
+			for (int j = 0; j < 2; j++) {
+				data[i][j] = j==0? itName.next(): itAddress.next().address;
+			}
+		}
+		return data;
+	}
+
+	public int numInvoices(){
+		int total = 0;
+		Iterator<PrincipalNode> itNode = this.hash.getIteratorValue();
+		while(itNode.hasNext()){
+			total += itNode.next().avl.size();
+		}
+		return total;
+	}
+
+
+	public Object[][] getTableInvoices(){
+		Iterator<String> itName = this.hash.getIteratorKey();
+		Iterator<PrincipalNode> itNode = this.hash.getIteratorValue();
+		Iterator<PrincipalNode.AVLNode> itAvl;
+		String name;
+		PrincipalNode node;
+		Object[][] data = new Object[this.numInvoices()][3];
+		PrincipalNode.AVLNode next;
+		int i =0;
+		int j = 0;
+		while(itName.hasNext()){
+			name = itName.next();
+			node = itNode.next();
+			itAvl = node.avl.getValueIterator();
+			while(itAvl.hasNext()){
+				next = itAvl.next();
+				data[i][0] = name;
+				data[i][1] = next.invoiceNumber;
+				data[i][2] = next.payment;
+				i++;
+			}
+		}
+		return data;
+	}
+
+	public Object[][] getTableExpenses(String name, int invoiceNumber){
+		return this.hash.getValue(name).getTableExpenses(invoiceNumber);
+	}
+
+	public Object[][] getTableTotalExpense(String name){
+		return this.hash.getValue(name).getTableTotalExpense(name);
+	}
+
+	public Object[][] getTableTotalPayments(String name){
+		return this.hash.getValue(name).getTableTotalPayments(name);
 	}
 }
